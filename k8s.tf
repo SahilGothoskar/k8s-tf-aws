@@ -118,6 +118,13 @@ resource "aws_security_group" "k8_master_sg" {
     protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "all"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = {
     Name = "k8s-Master-SG"
   }
@@ -159,7 +166,7 @@ resource "aws_security_group" "k8_worker_sg" {
 # Launch the Kubernetes master node
 resource "aws_instance" "k8s_master_instance" {
   ami                    = var.ami # Ubuntu Server 20.04 LTS
-  instance_type          = "t2.micro"
+  instance_type          = "t2.medium"
   subnet_id              = aws_subnet.public_subnets[0].id
   vpc_security_group_ids = [aws_security_group.k8_master_sg.id]
   key_name               = "SG"
@@ -187,6 +194,7 @@ resource "aws_instance" "k8s_worker_instance" {
   subnet_id              = aws_subnet.public_subnets[1].id
   vpc_security_group_ids = [aws_security_group.k8_worker_sg.id]
   key_name               = "SG"
+  associate_public_ip_address = true
 
   user_data = <<-EOF
               #!/bin/bash
